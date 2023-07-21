@@ -1,7 +1,7 @@
 import java.util.Scanner;
 import java.util.Random;
 
-public class TrabalhoSO {
+public class Main {
 
     static int MAXIMO_TEMPO_EXECUCAO = 65535;
 
@@ -29,7 +29,17 @@ public class TrabalhoSO {
       int alg;
       
       while(true) {
-        System.out.print("Escolha o argoritmo?: [1=FCFS 2=SJF Preemptivo 3=SJF Não Preemptivo  4=Prioridade Preemptivo 5=Prioridade Não Preemptivo  6=Round_Robin  7=Imprime lista de processos 8=Popular processos novamente 9=Sair]: ");
+        System.out.println("\n >>>>>ESCOLHA O ALGORITIMO <<<<<<<< \n");
+        System.out.println("1 - FCFS");
+        System.out.println("2 - SJF Preemptivo");
+        System.out.println("3 - SJF Não Preemptivo");
+        System.out.println("4 - Prioridade Preemptivo");
+        System.out.println("5 - Prioridade Não Preemptivo");
+        System.out.println("6 - Round_Robin");
+        System.out.println("7 - Imprime lista de processos");
+        System.out.println("8 - Popular processos novamente");
+        System.out.println("9 - Sair");
+        
         alg =  teclado.nextInt();
         
         
@@ -78,7 +88,7 @@ public class TrabalhoSO {
         aleatorio =  teclado.nextInt();
 
         for (int i = 0; i < n_processos; i++) {
-            //Popular Processos Aleatorio
+            //Popular  Processos Aleatorio
             if (aleatorio == 1){
                 tempo_execucao[i] = random.nextInt(10)+1;
                 tempo_chegada[i] = random.nextInt(10)+1;
@@ -102,26 +112,53 @@ public class TrabalhoSO {
 
     public static void imprime_processos(int[] tempo_execucao, int[] tempo_espera, int[] tempo_restante, int[] tempo_chegada,  int []prioridade){
         //Imprime lista de processos
+      System.out.println(" ");
       for (int i = 0; i < n_processos; i++) {
         System.out.println("Processo["+i+"]: tempo_execucao="+ tempo_execucao[i] + " tempo_restante="+tempo_restante[i] + " tempo_chegada=" + tempo_chegada[i] + " prioridade =" +prioridade[i]);
     }
     }
 
     public static void imprime_stats (int[] espera) {
-        int[] tempo_espera = espera.clone();
+      int[] tempo_espera = espera.clone();
+      int tempos = 0;
+      double media;
         //Implementar o calculo e impressão de estatisticas
+
+      System.out.println(" ");
+      for (int i = 0; i < n_processos; i++) {
+        System.out.println("Processo["+i+"]: tempo_espera ="+tempo_espera[i]);
+
+        tempos += tempo_espera[i];
+      }
+      media = (double) tempos;
+      media = media/n_processos;
+      
+      System.out.printf("Tempo médio de espera: " + "%.1f \n", media);
         
     }
     
     public static void FCFS(int[] execucao, int[] espera, int[] restante, int[] chegada){
-        int[] tempo_execucao = execucao.clone();
-        int[] tempo_espera = espera.clone();
-        int[] tempo_restante = restante.clone();
-        int[] tempo_chegada = chegada.clone();
+      int[] tempo_execucao = execucao.clone();
+      int[] tempo_espera = espera.clone();
+      int[] tempo_restante = restante.clone();
+      int[] tempo_chegada = chegada.clone();
+      int processo = 0;
 
-        //implementar código do FCFS
-        //...
-        //
+      System.out.println(" ");
+      for(int i=1; i<999999; i++) { 
+        System.out.println("tempo["+i+"]: processo["+processo+"] restante = " + (tempo_restante[processo]-1));
+        
+        if(tempo_restante[processo] == 1){ //VERIFICA O TEMPO RESTANTE DO PROCESSO
+          if(processo == n_processos-1){
+            break; // AO FINAL DA EXECUÇÃO DO ULTIMO PROCESSO, ENCERRA 
+          } else {
+            processo++; // TRANSIÇÃO DE PROCESSOS
+            tempo_espera[processo] = i;
+          }
+        }else {
+          tempo_restante[processo]--;
+        }
+      }
         
         imprime_stats(tempo_espera);
     }
@@ -132,10 +169,45 @@ public class TrabalhoSO {
         int[] tempo_restante = restante.clone();
         int[] tempo_chegada = chegada.clone();
 
-        //implementar código do SJF preemptivo e não preemptivo
-        //...
-        //
+        int menorTempo= 999999;
+        int processo = -1;
+        int cont = 0;
 
+        for (int i=1; i<= 999999; i++) {
+            if ((preemptivo) || ((processo == -1))) { // VERIFICA SE É PREEMPTIVO OU SE NÃO, SE HÁ PROCESSO EM EXECUÇÃO
+                for (int a=0; a<n_processos; a++) { // VERIFICA SE TEM PROCESSO DISPONIVEL
+                    if ((tempo_restante[a] != 0) && (tempo_chegada[a] <= i)) { // VERIFICA SE JA DEU INICIO NA EXECUÇÃO / TEMPO CHEGADA MENOR QUE O ATUAL
+                        if (tempo_restante[a] < menorTempo) {
+                            menorTempo = tempo_restante[a];
+                            processo = a;
+                        }
+                    }
+                }
+            }
+
+            //VERIFICA SE HÁ ALGUM PROCESSO PRONTO
+            if (processo == -1)
+                System.out.println("tempo["+i+"]: nenhum processo está pronto");
+            else {
+                if (tempo_restante[processo] == tempo_execucao[processo]) {
+                  tempo_espera[processo] = i - tempo_chegada[processo]; // REGISTRO DO TEMPO DE ESPERA
+                }  
+                tempo_restante[processo]--;
+                System.out.println("tempo["+i+"]: processo["+processo+"] restante="+(tempo_restante[processo]));
+
+               // VERIFICA SE O PROCESSO JA TERMINOU, SE SIM, RESETA OS CONTROLES PARA RETORNO AO TOPO DO LAÇO E PULA PARA O PROXIMO PROCESSO
+                if (tempo_restante[processo] == 0) {
+                    processo = -1;
+                    menorTempo = 999999;
+                    cont++;
+                    //VERIFICA SE TODOS OS PROCESSOS FORAM EXECUTADOS, SE SIM, FINALIZA A FUNÇÃO
+                    if (cont == n_processos)
+                        break;
+                }
+            }
+        }
+        
+      
         imprime_stats(tempo_espera);
       
     }
@@ -147,9 +219,43 @@ public class TrabalhoSO {
         int[] tempo_chegada = chegada.clone();
         int[] prioridade_temp = prioridade.clone();
 
-        //implementar código do Prioridade preemptivo e não preemptivo
-        //...
-        //
+        int maiorPrioridade = 0;
+        int processo = -1;
+        int cont = 0;
+
+        for (int i=1; i<= 999999; i++) {
+            if ((preemptivo) || ((processo == -1))) { // VERIFICA SE É PREEMPTIVO OU SE NÃO, SE HÁ PROCESSO EM EXECUÇÃO
+                for (int a=0; a<n_processos; a++) { // VERIFICA SE TEM PROCESSO DISPONIVEL
+                    if ((tempo_restante[a] != 0) && (tempo_chegada[a] <= i)) { // VERIFICA SE JA DEU INICIO NA EXECUÇÃO / PRIORIDADE MAIOR QUE O ATUAL
+                        if (prioridade_temp[a] > maiorPrioridade) {
+                            maiorPrioridade = prioridade_temp[a];
+                            processo = a;
+                        }
+                    }
+                }
+            }
+
+            //VERIFICA SE HÁ ALGUM PROCESSO PRONTO
+            if (processo == -1)
+                System.out.println("tempo["+i+"]: nenhum processo está pronto");
+            else {
+                if (tempo_restante[processo] == tempo_execucao[processo]) {
+                  tempo_espera[processo] = i - tempo_chegada[processo]; // REGISTRO DO TEMPO DE ESPERA
+                }  
+                tempo_restante[processo]--;
+                System.out.println("tempo["+i+"]: processo["+processo+"] restante="+(tempo_restante[processo]));
+
+               // VERIFICA SE O PROCESSO JA TERMINOU, SE SIM, RESETA OS CONTROLES PARA RETORNO AO TOPO DO LAÇO E PULA PARA O PROXIMO PROCESSO
+                if (tempo_restante[processo] == 0) {
+                    processo = -1;
+                    maiorPrioridade = 0;
+                    cont++;
+                    //VERIFICA SE TODOS OS PROCESSOS FORAM EXECUTADOS, SE SIM, FINALIZA A FUNÇÃO
+                    if (cont == n_processos)
+                        break;
+                }
+            }
+        }
 
           imprime_stats(tempo_espera);
       
@@ -160,10 +266,23 @@ public class TrabalhoSO {
         int[] tempo_espera = espera.clone();
         int[] tempo_restante = restante.clone();
 
-        
-        //implementar código do Round-Robin
-        //...
-        //
+        int quantum;
+        int processosTerminados = 0;
+        int processo = 0;
+        int menorTempo = 999999;
+        Scanner teclado = new Scanner (System.in);
+      
+
+        System.out.println("Escolha o tempo do Quantum: ");
+        int quatum =  teclado.nextInt();
+      
+        for (int i=0; i < 1; i++) {
+          System.out.println("tempo["+i+"]: processo["+processo+"] restante="+(tempo_restante[processo]));
+          tempo_restante[processo]--;
+          if(tempo_execucao[processo] == 0) {
+            processo++;
+          }
+        }
         
         imprime_stats(tempo_espera);
     }
