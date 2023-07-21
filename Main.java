@@ -274,8 +274,8 @@ public class Main {
       
 
         System.out.println("Escolha o tempo do Quantum: ");
-        int quatum =  teclado.nextInt();
-      
+        int quantum =  teclado.nextInt();
+
         for (int i=0; i < 1; i++) {
           System.out.println("tempo["+i+"]: processo["+processo+"] restante="+(tempo_restante[processo]));
           tempo_restante[processo]--;
